@@ -1,0 +1,10 @@
+body {
+    background-image: url('/images/blurred.jpg');
+    background: url(/images/background-1.jpg) no-repeat center center fixed;
+    webkit-background-size: cover;
+    moz-background-size: cover;
+    o-background-size: cover;
+    background-size: cover;
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/images/blurred.jpg',     sizingMethod='scale');
+    -ms-filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/images/blurred.jpg', sizingMethod='scale');
+}

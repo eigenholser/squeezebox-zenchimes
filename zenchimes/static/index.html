@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Zen Chimes</title>
+
+    <!-- Bootstrap -->
+    <link href="/vendor.css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/zenchimes.css" rel="stylesheet">
+    <link rel="shortcut icon" href="/images/yin_yang_icon.png">
+    <!-- <script src="vendor.js/modernizr.custom.js"></script> -->
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div id="chime_container" class="container">
+
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="page-header">
+              <h1 id="type">Zen Chimes</h1>
+          </div>
+        </div>
+      </div> <!-- row -->
+
+      <div class="row">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">Available Chimes</h3>
+            </div>
+            <div class="panel-body">
+              <p>Select the chime that will play.</p>
+
+                <div id="chimeapp"></div>
+
+            </div>
+          </div> <!-- panel-primary -->
+      </div> <!-- row -->
+
+    </div> <!-- container -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="vendor.js/jquery.min.js"></script>
+    <script src="vendor.js/underscore.js"</script>
+    <script src="vendor.js/bootstrap.min.js"></script>
+    <script src="vendor.js/backbone.js"></script>
+    <script src="js/zenchimes.js"></script>
+
+    <!-- Templates -->
+
+    <script type="text/template" id="chimes-template">
+        <ul class="list-unstyled"></ul>
+    </script>
+
+    <script type="text/template" id="chime-template">
+      <div class="form-group">
+        <div class="col-sm-2">
+          <div class="btn-group btn-group-md" data-toggle="buttons">
+            <label class="btn btn-primary">
+              <input class="toggle" type="radio"
+                 name="chimeRadio" <%= is_active ? 'checked' : '' %> />
+              <% if (is_active) { %>
+                  <span class="glyphicon glyphicon-ok chimeRad" id="chimeRadio-<%- id %>"></span>
+              <% } else { %>
+                  <span class="glyphicon glyphicon-unchecked chimeRad" id="chimeRadio-<%- id %>"></span>
+              <% } %>
+            </label>
+            <label class="btn btn-primary">
+              <span class="glyphicon glyphicon-play" id="playButton-<%- id %>"></span>
+            </label>
+          </div> <!-- col-md-4 -->
+        </div> <!-- btn-group -->
+        <div class="col-sm-10">
+          <h4><%- description %></h4>
+        </div>
+      </div> <!-- form-group -->
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,3 @@
+-r install.txt
+ipdb==0.8
+ipython==2.1.0
