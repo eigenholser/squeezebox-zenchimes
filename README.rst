@@ -7,6 +7,12 @@ uses Bootstrap, backbone.js and jQuery.
 
 About The Chimes
 ----------------
+Mindfulness and meditation are centuries-old practices for connecting an
+individual to the person’s inner self and for establishing a consciousness of
+love and harmony.
+
+A gentle sound, often a bell or gong, is a wonderful reminder either to pause
+for such contemplation or to sustain the individual’s uplifted awareness.
 
 
 Installation
@@ -22,6 +28,16 @@ privileges to manage everything.::
     # add chimes and cover art to Logitech Media Server
     # edit extras/zenchimes.cfg
     $ sudo ./install.sh
+
+Dependencies
+------------
+Ubuntu is ready for installation. On Raspian, install these dependencies
+first::
+
+    sudo apt-get install python-pip
+    sudo apt-get install python-virtualenv
+    sudo apt-get install m4
+    sudo apt-get install sqlite3
 
 Logitech Media Server
 ---------------------
