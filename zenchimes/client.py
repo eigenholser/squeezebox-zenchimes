@@ -172,6 +172,8 @@ class LMSCommandLineInterface(object):
                     else:
                         current_player[key] = value
 
+        self.logger.debug("Initial State: {0}".format(self.players_initial_state))
+
     def restore_players_initial_state(self):
         """
         Restore specific player parameters such as volume and power.
@@ -233,7 +235,7 @@ class LMSCommandLineInterface(object):
 
         # Play chime only if idle
         # TODO: Consolidate restrictions like mode and quiet time in one place.
-        if sync_master_mode == 'stop':
+        if sync_master_mode != 'play':
             self.power_on()
             # Give it a moment to settle.
             time.sleep(1)
