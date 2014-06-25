@@ -42,7 +42,7 @@ def main():
     logger.debug("PROJECT_ROOT: {0}".format(settings.PROJECT_ROOT))
     logger.debug("APP_ROOT: {0}".format(settings.APP_ROOT))
     scheduler = ChimeScheduler()
-    scheduler.daemon = False
+    scheduler.daemon = True
     scheduler.start()
     logger.debug("Starting server.")
     run(host=HTTP_LISTEN_IP_ADDR, port=HTTP_LISTEN_PORT)

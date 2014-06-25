@@ -12,6 +12,11 @@ if [ `id -u` != 0 ]; then
     exit 1
 fi
 
+if [ -e /etc/redhat_release ]; then
+    echo "Not tested at all on Redhat."
+    exit 1
+fi
+
 # But if not sudo, compensate.
 if [ -z $SUDO_USER ]; then
     SUDO_USER=root
@@ -72,11 +77,19 @@ su $SUDO_USER -c "source $install_dir/env/bin/activate; pip install dist/zenchim
 export PROJECT_ROOT=`su $SUDO_USER -c "cd $install_dir; source env/bin/activate; python -c 'from zenchimes import settings; print settings.PROJECT_ROOT;'"`
 
 # Install upstart file
-/usr/bin/m4 \
-    --define=__INSTALL_DIR__=$install_dir \
-    --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
-    extras/zenchimes.conf > /etc/init/zenchimes.conf
-chown root:root /etc/init/zenchimes.conf
+if [ -e /usr/bin/lsb_release ]; then
+    /usr/bin/m4 \
+        --define=__INSTALL_DIR__=$install_dir \
+        --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
+        extras/zenchimes.conf > /etc/init/zenchimes.conf
+    chown root:root /etc/init/zenchimes.conf
+else
+    /usr/bin/m4 \
+        --define=__INSTALL_DIR__=$install_dir \
+        --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
+        extras/zenchimes_init.d > /etc/init.d/zenchimes
+    chown root:root /etc/init.d/zenchimes
+fi
 
 # Had to do this trick because I didn't want to run pip as root.
 chown root:root $install_dir
