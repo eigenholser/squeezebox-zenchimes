@@ -22,7 +22,7 @@ DAEMON=__PROJECT_ROOT__/server.py
 DAEMON_ARGS="--options args"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
-export PYTHON_HOME=__INSTALL_DIR__
+export PYTHON_HOME=__INSTALL_DIR__/env
 
 # Exit if the package is not installed
 [ -f "$DAEMON" ] || exit 0

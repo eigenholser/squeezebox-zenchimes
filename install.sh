@@ -27,6 +27,7 @@ if [ -e /usr/bin/lsb_release ]; then
     # Ubuntu
     STARTUP_SOURCE=extras/zenchimes_upstart.m4
     STARTUP_FILE=/etc/init/zenchimes.conf
+    STARTUP_CMD="/sbin/start zenchimes"
     # Stop zenchimes if it is running.
     if [ -f $UPSTART_CONF ]; then
         /sbin/status zenchimes | grep --silent running
@@ -39,10 +40,11 @@ else
     # Raspian?
     STARTUP_SOURCE=extras/zenchimes_sysvinit.m4
     STARTUP_FILE=/etc/init.d/zenchimes
-    /usr/bin/service zenchimes status > /dev/null
+    STARTUP_CMD="/usr/sbin/service zenchimes start"
+    /usr/sbin/service zenchimes status > /dev/null
     # Stop zenchimes if it is running.
     if [ $? == 0 ]; then
-        /usr/bin/service zenchimes stop > /dev/null
+        /usr/sbin/service zenchimes stop > /dev/null
         sleep 1
     fi
 fi
@@ -105,5 +107,4 @@ chown root:root $install_dir
 chown -R root:root $install_dir/env
 
 # Start the service
-/sbin/start zenchimes
-
+$STARTUP_CMD
