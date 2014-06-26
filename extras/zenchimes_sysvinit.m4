@@ -1,4 +1,5 @@
-#! /bin/sh ### BEGIN INIT INFO
+#! /bin/sh
+### BEGIN INIT INFO
 # Provides:          zenchimes
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
