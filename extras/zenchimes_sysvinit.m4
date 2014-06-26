@@ -18,11 +18,11 @@
 PATH=/sbin:/usr/sbin:/bin:/usr/bin
 DESC="Zen Chimes server"
 NAME=zenchimes
-DAEMON=/usr/local/zenchimes/env/lib/python2.7/site-packages/zenchimes/server.py
+DAEMON=__PROJECT_ROOT__/server.py
 DAEMON_ARGS="--options args"
 PIDFILE=/var/run/$NAME.pid
 SCRIPTNAME=/etc/init.d/$NAME
-export PYTHON_HOME=/usr/local/zenchimes/env
+export PYTHON_HOME=__INSTALL_DIR__
 
 # Exit if the package is not installed
 [ -f "$DAEMON" ] || exit 0

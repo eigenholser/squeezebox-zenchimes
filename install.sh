@@ -22,16 +22,33 @@ if [ -z $SUDO_USER ]; then
     SUDO_USER=root
 fi
 
-# Stop zenchimes if it is running.
-status zenchimes | grep --silent running
-if [ $? == 0 ]; then
-    stop zenchimes
-    sleep 1
+# Want to install on recent Ubuntu and Raspian. Raspian OOB uses sysv init.
+if [ -e /usr/bin/lsb_release ]; then
+    # Ubuntu
+    STARTUP_SOURCE=extras/zenchimes_upstart.m4
+    STARTUP_FILE=/etc/init/zenchimes.conf
+    # Stop zenchimes if it is running.
+    if [ -f $UPSTART_CONF ]; then
+        /sbin/status zenchimes | grep --silent running
+        if [ $? == 0 ]; then
+            stop zenchimes
+            sleep 1
+        fi
+    fi
+else
+    # Raspian?
+    STARTUP_SOURCE=extras/zenchimes_sysvinit.m4
+    STARTUP_FILE=/etc/init.d/zenchimes
+    /usr/bin/service zenchimes status > /dev/null
+    # Stop zenchimes if it is running.
+    if [ $? == 0 ]; then
+        /usr/bin/service zenchimes stop > /dev/null
+        sleep 1
+    fi
 fi
 
-echo "Please specify installation prefix [/usr/local]: "
-
-read install_prefix
+#echo "Please specify installation prefix [/usr/local]: "
+#read install_prefix
 # TODO: This is hardwired for now. Need to do some reasonable validation to
 # protect the innocent.
 install_prefix=/usr/local
@@ -76,20 +93,12 @@ su $SUDO_USER -c "source $install_dir/env/bin/activate; pip install dist/zenchim
 
 export PROJECT_ROOT=`su $SUDO_USER -c "cd $install_dir; source env/bin/activate; python -c 'from zenchimes import settings; print settings.PROJECT_ROOT;'"`
 
-# Install upstart file
-if [ -e /usr/bin/lsb_release ]; then
-    /usr/bin/m4 \
-        --define=__INSTALL_DIR__=$install_dir \
-        --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
-        extras/zenchimes.conf > /etc/init/zenchimes.conf
-    chown root:root /etc/init/zenchimes.conf
-else
-    /usr/bin/m4 \
-        --define=__INSTALL_DIR__=$install_dir \
-        --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
-        extras/zenchimes_init.d > /etc/init.d/zenchimes
-    chown root:root /etc/init.d/zenchimes
-fi
+# Install upstart file.
+/usr/bin/m4 \
+    --define=__INSTALL_DIR__=$install_dir \
+    --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
+    $STARTUP_SOURCE > $STARTUP_FILE
+chown root:root /etc/init.d/zenchimes
 
 # Had to do this trick because I didn't want to run pip as root.
 chown root:root $install_dir
