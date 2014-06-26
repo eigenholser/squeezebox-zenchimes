@@ -7,6 +7,7 @@ import json
 import logging
 import multiprocessing
 import os
+import signal
 import sqlite3
 import sys
 from time import sleep
@@ -42,8 +43,16 @@ def main():
     logger.debug("PROJECT_ROOT: {0}".format(settings.PROJECT_ROOT))
     logger.debug("APP_ROOT: {0}".format(settings.APP_ROOT))
     scheduler = ChimeScheduler()
+
+    # Stop scheduler on SIGTERM
+    def sigterm_handler(signum, frame):
+        scheduler.stop()
+
     scheduler.daemon = True
+    logger.info("Starting scheduler.")
     scheduler.start()
+    signal.signal(signal.SIGTERM, sigterm_handler)
+
     logger.debug("Starting server.")
     run(host=HTTP_LISTEN_IP_ADDR, port=HTTP_LISTEN_PORT)
 
