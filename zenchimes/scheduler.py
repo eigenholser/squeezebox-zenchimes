@@ -3,7 +3,9 @@ from datetime import date, datetime, time, timedelta
 from pytz import timezone
 import ConfigParser
 import pytz
-import os, sys
+import os
+import signal
+import sys
 from time import sleep
 import logging
 from zenchimes.client import LMSCommandLineInterface
@@ -21,7 +23,15 @@ class ChimeScheduler(Process):
         """
         super(ChimeScheduler, self).__init__(target=self.loop, *args, **kwargs)
 
-        config = ConfigParser.ConfigParser()
+        # SIGUSR1 to reread configuration and re-initialize schedule.
+        signal.signal(signal.SIGUSR1, self.sigusr1_handler)
+
+        self.config = ConfigParser.ConfigParser()
+        self.configure()
+
+    def configure(self):
+        self.logger.info("Reading configuration.")
+        config = self.config
         config.read(settings.CONFIG_FILE)
         self.TIMEZONE = config.get('scheduler', 'timezone')
         self.STARTTIME = config.get('scheduler', 'starttime')
@@ -46,6 +56,10 @@ class ChimeScheduler(Process):
         self.endx = time(e.hour, e.minute, e.second)
 
         self.advance_counter()
+
+    def sigusr1_handler(self, signum, frame):
+        # Rebuild schedule.
+        self.configure()
 
     def current_time(self):
         t = datetime.now()
@@ -121,6 +135,7 @@ class ChimeScheduler(Process):
                 self.logger.debug("diff: {0}".format(diff))
                 self.logger.debug("current_event: {0}".format(self.current_event))
                 self.logger.debug("event_count: {0}".format(self.event_count))
+
                 if diff > 0:
                     sleep(diff)
                 elif diff == 0:
