@@ -1,5 +1,4 @@
-#! /bin/sh
-### BEGIN INIT INFO
+#! /bin/sh ### BEGIN INIT INFO
 # Provides:          zenchimes
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
@@ -49,7 +48,7 @@ do_start()
 	#   2 if daemon could not be started
 	#start-stop-daemon --start --quiet --pidfile $PIDFILE --exec $DAEMON --test > /dev/null \
 	#	|| return 1
-	start-stop-daemon --start --quiet --pidfile $PIDFILE --chuid nobody --group nogroup --exec $PYTHON_HOME/bin/python $DAEMON -- \
+	start-stop-daemon --start --quiet --make-pidfile --pidfile $PIDFILE --chuid nobody --group nogroup --exec $PYTHON_HOME/bin/python $DAEMON -- \
 		$DAEMON_ARGS \
 		|| return 2
 	# Add code here, if necessary, that waits for the process to be ready
@@ -67,7 +66,7 @@ do_stop()
 	#   1 if daemon was already stopped
 	#   2 if daemon could not be stopped
 	#   other if a failure occurred
-	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE --name $NAME
+	start-stop-daemon --stop --quiet --retry=TERM/30/KILL/5 --pidfile $PIDFILE
 	RETVAL="$?"
 	[ "$RETVAL" = 2 ] && return 2
 	# Wait for children to finish too if this is a daemon that forks
@@ -76,7 +75,7 @@ do_stop()
 	# that waits for the process to drop all resources that could be
 	# needed by services started subsequently.  A last resort is to
 	# sleep for some time.
-	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --exec $DAEMON
+	start-stop-daemon --stop --quiet --oknodo --retry=0/30/KILL/5 --pidfile $PIDFILE
 	[ "$?" = 2 ] && return 2
 	# Many daemons don't delete their pidfiles when they exit.
 	rm -f $PIDFILE
@@ -95,12 +94,11 @@ do_reload() {
 	start-stop-daemon --stop --signal 1 --quiet --pidfile $PIDFILE --name $NAME
 	return 0
 }
-echo $1
+
 case "$1" in
   start)
 	[ "$VERBOSE" != no ] && log_daemon_msg "Starting $DESC" "$NAME"
 	do_start
-	echo -n "do_start rc: "
 	case "$?" in
 		0|1) [ "$VERBOSE" != no ] && log_end_msg 0 ;;
 		2) [ "$VERBOSE" != no ] && log_end_msg 1 ;;

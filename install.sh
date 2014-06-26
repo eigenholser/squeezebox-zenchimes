@@ -74,11 +74,6 @@ fi
 # Service runs as user `nobody'. Database must be writable.
 chown nobody:nogroup $install_dir/chimes.db
 
-# Create logfile
-[ -e $install_dir/zenchimes.log ] && rm $install_dir/zenchimes.log
-touch $install_dir/zenchimes.log
-chown nobody:nogroup $install_dir/zenchimes.log
-
 # Setup Python virtual environment and install requirements
 if [ -e ${install_dir}/env ]; then
     chown -R $SUDO_USER $install_dir/env
@@ -103,8 +98,8 @@ export PROJECT_ROOT=`su $SUDO_USER -c "cd $install_dir; source env/bin/activate;
 chown root:root /etc/init.d/zenchimes
 
 # Had to do this trick because I didn't want to run pip as root.
-chown root:root $install_dir
-chown -R root:root $install_dir/env
+chown nobody:nogroup $install_dir
+chown -R nobody:nogroup $install_dir/env
 
 # Start the service
 $STARTUP_CMD
