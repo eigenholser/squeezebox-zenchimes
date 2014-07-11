@@ -31,9 +31,9 @@ privileges to manage everything.::
 
 Dependencies
 ------------
-Ubuntu is ready for installation. On Raspian, install these dependencies
-first::
+Install these dependencies first::
 
+    sudo apt-get install python-setuptools
     sudo apt-get install python-pip
     sudo apt-get install python-virtualenv
     sudo apt-get install m4
