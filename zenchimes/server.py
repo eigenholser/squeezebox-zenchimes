@@ -17,8 +17,14 @@ from zenchimes.scheduler import ChimeScheduler
 from zenchimes import settings
 
 
+#config = ConfigParser.ConfigParser()
+#config.read("{0}".format(settings.CONFIG_FILE))
+
+# TODO: Temporary
 config = ConfigParser.ConfigParser()
-config.read("{0}".format(settings.CONFIG_FILE))
+config_file = "{0}/extras/zenchimes.cfg".format(os.path.abspath(
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')))
+config.read(config_file)
 
 # There is no logging yet so let's just make it work.
 try:
@@ -35,42 +41,37 @@ logger = logging.getLogger()
 HTTP_LISTEN_IP_ADDR = config.get('server', 'http_listen_ip_addr')
 HTTP_LISTEN_PORT = config.get('server', 'http_listen_port')
 
-def main():
-    """
-    Start up the server.
-    """
-    logger.debug("Initializing scheduler.")
-    logger.debug("PROJECT_ROOT: {0}".format(settings.PROJECT_ROOT))
-    logger.debug("APP_ROOT: {0}".format(settings.APP_ROOT))
-    scheduler = ChimeScheduler()
+app = application = Bottle()
 
-    # Stop scheduler on SIGTERM
-    def sigterm_handler(signum, frame):
-        scheduler.stop()
 
-    scheduler.daemon = True
-    logger.info("Starting scheduler.")
-    scheduler.start()
-    signal.signal(signal.SIGTERM, sigterm_handler)
+class StripPathMiddleware(object):
+    '''
+    Get that slash out of the request
+    '''
+    def __init__(self, a):
+        self.a = a
+    def __call__(self, e, h):
+        e['PATH_INFO'] = e['PATH_INFO'].rstrip('/')
+        return self.a(e, h)
 
-    logger.debug("Starting server.")
-    run(host=HTTP_LISTEN_IP_ADDR, port=HTTP_LISTEN_PORT)
 
-@route('/')
+@app.route('/')
 def index():
     """
     Return Zen Chimes app.
     """
     return static_file('index.html', root=settings.PUBLIC_ROOT)
 
-@route('<filepath:path>')
+
+@app.route('<filepath:path>')
 def serve_static(filepath):
     """
     Fetch arbitrary static files in PUBLIC_ROOT.
     """
     return static_file(filepath, root=settings.PUBLIC_ROOT)
 
-@put('/chimes/<id:int>')
+
+@app.put('/chimes/<id:int>')
 def chime_update(id):
     """
     API endpoint to set new active chime.
@@ -86,7 +87,7 @@ def chime_update(id):
     return {'status': 'ok'}
 
 
-@get('/chimes')
+@app.get('/chimes')
 def chimes_collection():
     """
     API endpoint returns all chimes in the database.
@@ -104,8 +105,9 @@ def chimes_collection():
         chime_list.append(row_dict)
     return json.dumps(chime_list)
 
-@get('/config')
-@put('/config')
+
+@app.get('/config')
+@app.put('/config')
 def config_data():
     """
     Experimental API endpoint to get and set select config data using Python's
@@ -145,5 +147,7 @@ def config_data():
     if request.method == 'PUT':
         return {'status': 'ok'}
 
+
 if __name__ == '__main__':
-    main()
+    run(app=StripPathMiddleware(app),
+        host=HTTP_LISTEN_IP_ADDR, port=HTTP_LISTEN_PORT)
