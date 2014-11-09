@@ -17,7 +17,7 @@ from zenchimes import settings
 class ChimeScheduler(Process):
     fmt = '%H:%M:%S'
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, config=None, *args, **kwargs):
         """
         Initialize chime scheduler.
         """
@@ -26,13 +26,12 @@ class ChimeScheduler(Process):
         # SIGUSR1 to reread configuration and re-initialize schedule.
         signal.signal(signal.SIGUSR1, self.sigusr1_handler)
 
-        self.config = ConfigParser.ConfigParser()
+        self.config = config
         self.configure()
 
     def configure(self):
         self.logger.info("Reading configuration.")
         config = self.config
-        config.read(settings.CONFIG_FILE)
         self.TIMEZONE = config.get('scheduler', 'timezone')
         self.STARTTIME = config.get('scheduler', 'starttime')
         self.ENDTIME = config.get('scheduler', 'endtime')
@@ -155,11 +154,29 @@ class ChimeScheduler(Process):
 
 
 if __name__ == '__main__':
+    # TODO: Temporary
+    config = ConfigParser.ConfigParser()
+    config_file = "{0}/extras/zenchimes.cfg".format(os.path.abspath(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')))
+    config.read(config_file)
+
+    # There is no logging yet so let's just make it work.
+    try:
+        loglevel = config.get('zenchimes', 'loglevel')
+    except:
+        loglevel = "INFO"
+
+    logging.basicConfig(filename=settings.LOG_FILE,
+            level=eval("logging.{0}".format(loglevel)),
+            format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
+    logger = logging.getLogger()
+
     # TODO: Make this work standalone. Add logger and configparser.
-    scheduler = ChimeScheduler()
-    scheduler.daemon = False
+    scheduler = ChimeScheduler(config=config, name='zenchimes_scheduler')
+    scheduler.daemon = True
     #scheduler.loop()
     scheduler.start()
-    while True:
-        sleep(5)
-        print "scheduler is_alive:", scheduler.is_alive()
+    scheduler.join()
+#   while True:
+#       sleep(5)
+#       print "scheduler is_alive:", scheduler.is_alive()
