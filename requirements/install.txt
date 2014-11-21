@@ -1,4 +1,7 @@
 argparse==1.2.1
 bottle==0.12.7
 pytz==2014.3
+pyzmq==14.4.1
+requests==2.4.3
+uWSGI==2.0.8
 wsgiref==0.1.2
