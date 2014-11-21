@@ -2,8 +2,10 @@
 
 import ConfigParser
 import errno
+import json
 import os
 import os.path
+import requests
 import socket
 import sqlite3
 import string
@@ -25,42 +27,33 @@ class LMSCommandLineInterface(object):
         self.logger.debug("Initializing")
         self.error = False
 
-        config = ConfigParser.ConfigParser()
-        config.read(settings.CONFIG_FILE)
-
-        self.LMS_CHIME_PATH = config.get('player', 'lms_chime_path')
-        self.LMS_HOSTNAME = config.get('player', 'lms_hostname')
-        self.LMS_PORT = int(config.get('player', 'lms_port'))
-        self.MIXER_VOLUME = config.get('player', 'mixer_volume')
+        req = requests.get('http://localhost:3031/config')
+        config = json.loads(req.text)
+        player = config.get('player', None) # TODO: handle this case
+        self.LMS_CHIME_PATH = player.get('lms_chime_path', None)
+        self.LMS_HOSTNAME = player.get('lms_hostname', None)
+        self.LMS_PORT = int(player.get('lms_port', None))
+        self.MIXER_VOLUME = player.get('mixer_volume', None)
 
         self.logger.debug("LMS_HOSTNAME: {0}".format(self.LMS_HOSTNAME))
         self.logger.debug("LMS_PORT: {0}".format(self.LMS_PORT))
         self.logger.debug("LMS_CHIME_PATH: {0}".format(self.LMS_CHIME_PATH))
         self.logger.debug("MIXER_VOLUME: {0}".format(self.MIXER_VOLUME))
 
-        # Fetch the chime from the database every time.
-        if not os.path.isfile(settings.CHIME_DATABASE):
-            self.error = True
-            self.logger.critical("No such database file: {0}".format(
-                settings.CHIME_DATABASE))
-            return
-
         # Quick and dirty error catch-all.
-        try:
-            self.conn = sqlite3.connect(settings.CHIME_DATABASE)
-            self.conn.row_factory = sqlite3.Row
-            c = self.conn.cursor()
-            c.execute('SELECT * FROM chime WHERE is_active = 1')
-            row = c.fetchone()
-            self.chime_name = row['description']
-            self.chime_filename = "{0}/{1}".format(
-                    self.LMS_CHIME_PATH, row['filename'])
+        req = requests.get("http://localhost:3031/chimes")
+        chimes = json.loads(req.text)
+
+        for chime in chimes:
+            if not chime.get('is_active', False):
+                continue
+
+            # XXX: This is the new way to fetch the active chime data.
+            self.chime_name = chime.get('description', None)
+            self.chime_filename = "{0}/{1}".format(self.LMS_CHIME_PATH,
+                    chime.get('filename', ''))
             self.logger.debug("chime_filename: {0}".format(
                 self.chime_filename))
-        except Exception as e:
-            self.error = True
-            self.logger.error("Database error: {0}".format(e.strerror))
-            return
 
         try:
             self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

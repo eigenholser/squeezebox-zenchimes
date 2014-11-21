@@ -11,6 +11,7 @@ import signal
 import sqlite3
 import sys
 from time import sleep
+import zmq
 
 from zenchimes.client import LMSCommandLineInterface
 from zenchimes.scheduler import ChimeScheduler
@@ -40,6 +41,11 @@ logger = logging.getLogger()
 ## Fetch some configuration settings
 HTTP_LISTEN_IP_ADDR = config.get('server', 'http_listen_ip_addr')
 HTTP_LISTEN_PORT = config.get('server', 'http_listen_port')
+
+context = zmq.Context()
+socket = context.socket(zmq.PAIR)
+url = "tcp://localhost:5000"
+socket.connect(url)
 
 app = application = Bottle()
 
@@ -84,6 +90,7 @@ def chime_update(id):
     c.execute('UPDATE chime SET is_active = 1 WHERE id = ?', (str(id)))
     conn.commit()
 
+    socket.send("CONFIG")
     return {'status': 'ok'}
 
 
@@ -113,35 +120,20 @@ def config_data():
     Experimental API endpoint to get and set select config data using Python's
     ConfigParser and our configuration file.
     """
-    config = ConfigParser.ConfigParser()
 
     if request.method == 'GET':
-        config.read(settings.CONFIG_FILE)
-        # TODO: Probably ought to do some exception handling so a bad edit
-        # doesn't crash the server.
-        config_data = {
-            'zenchimes': {
-                'loglevel': config.get('zenchimes', 'loglevel'),
-            },
-            'server': {
-                'http_listen_ip_addr': config.get('server',
-                    'http_listen_ip_addr'),
-                'http_listen_port': config.get('server', 'http_listen_port'),
-            },
-            'scheduler': {
-                'timezone': config.get('scheduler', 'timezone'),
-                'starttime': config.get('scheduler', 'starttime'),
-                'endtime': config.get('scheduler', 'endtime'),
-                'chime_interval': config.get('scheduler', 'chime_interval'),
-            },
-            'player': {
-                'lms_hostname': config.get('player', 'lms_hostname'),
-                'lms_port': config.get('player', 'lms_port'),
-                'mixer_volume': config.get('player', 'mixer_volume'),
-                'lms_chime_path': config.get('player', 'lms_chime_path'),
-            },
-        }
-        return json.dumps(config_data)
+        chime_list = []
+        conn = sqlite3.connect(settings.CHIME_DATABASE)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        row_dict = {}
+        for row in c.execute('SELECT * FROM config'):
+            section = row['section']
+            if not row_dict.get(section, None):
+                row_dict[section] = {}
+            row_dict[section][row['parameter']] = row['value']
+
+        return json.dumps(row_dict)
 
     # TODO: Not implemented yet. Need JavaScript code...
     if request.method == 'PUT':
