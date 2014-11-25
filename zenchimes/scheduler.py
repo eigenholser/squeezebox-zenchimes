@@ -1,5 +1,8 @@
 import ConfigParser
 import json
+import logging
+import logging.config
+import logging.handlers
 import os
 import pytz
 import requests
@@ -10,13 +13,15 @@ import zmq
 from datetime import date, datetime, time, timedelta
 from pytz import timezone
 from threading import Thread
+from tornado.tcpserver import TCPServer
 from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
 from zmq.eventloop.zmqstream import ZMQStream
 
-import logging
 from zenchimes.client import LMSCommandLineInterface
-from zenchimes.utilities import logged_class
+from zenchimes.utilities import logged_class, sockethandler, LogServer
 from zenchimes import settings
+
+
 
 
 @logged_class
@@ -107,7 +112,7 @@ class ChimeScheduler(object):
 
     def handle_ctrl_msg(self, event):
         msg = event[0]
-        # TODO: Log a message.
+        self.logger.info("Received control message {}".format(msg))
         if msg == 'CONFIG':
             self.configure()
 
@@ -134,11 +139,13 @@ class ChimeScheduler(object):
         socket.bind("tcp://*:5000")
 
         loop = self.loop
+        logserver = LogServer()
+        logserver.listen(settings.TCP_LOGGING_PORT)
 
         stream = ZMQStream(socket, loop)
         stream.on_recv(self.handle_ctrl_msg)
 
-        pc = PeriodicCallback(self.chime, 60000, loop)
+        pc = PeriodicCallback(self.chime, 15000, loop)
         pc.start()
 
         loop.start()
@@ -168,6 +175,7 @@ class ChimeScheduler(object):
                 self.current_event += 1
 
 
+
 if __name__ == '__main__':
     # TODO: Temporary
     config = ConfigParser.ConfigParser()
@@ -181,10 +189,7 @@ if __name__ == '__main__':
     except:
         loglevel = "INFO"
 
-    logging.basicConfig(filename=settings.LOG_FILE,
-            level=eval("logging.{0}".format(loglevel)),
-            format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
-    logger = logging.getLogger()
+    logging.config.dictConfig(settings.LOGGING_CONFIG)
 
     scheduler = ChimeScheduler(config=config)
     scheduler.start()
