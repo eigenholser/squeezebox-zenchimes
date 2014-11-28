@@ -25,7 +25,7 @@
       <div class="row">
         <div class="col-lg-12">
           <div class="page-header">
-              <h1 id="type">Zen Chimes</h1>
+              <h1 id="type">Test</h1>
           </div>
         </div>
       </div> <!-- row -->
@@ -41,40 +41,56 @@
                 <div id="chimeapp"></div>
 
             </div>
+
           </div> <!-- panel-primary -->
       </div> <!-- row -->
 
+      <div class="row">
+        <div class="panel panel-primary">
+
+          <div class="panel-heading">
+            <!-- <h3 class="panel-title">System Configuration</h3> -->
+            <!--<h3 class="panel-title"><a href="#system" data-toggle="collapse">System Configuration</a></h3>-->
+            <h3 class="panel-title">System Configuration
+                <button class="btn btn-primary" data-toggle="collapse"
+                  data-target="#system">
+                  <span class="glyphicon glyphicon-chevron-down"></span>
+              </button>
+            </h3>
+          </div>
+
+        <div id="system" class="collapse">
+            <div class="panel-body">
+              <div>
+                <p>This is a test</p>
+              </div>
+            </div>
+
+          </div>
+        </div> <!-- row -->
+      </div>
+
     </div> <!-- container -->
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="vendor.js/jquery.min.js"></script>
-    <script src="vendor.js/underscore.js"</script>
-    <script src="vendor.js/bootstrap.min.js"></script>
-    <script src="vendor.js/backbone.js"></script>
-    <script src="js/zenchimes.js"></script>
+
 
     <!-- Templates -->
-
-    <script type="text/template" id="chimes-template">
-        <ul class="list-unstyled"></ul>
-    </script>
 
     <script type="text/template" id="chime-template">
       <div class="form-group">
         <div class="col-sm-2">
           <div class="btn-group btn-group-md" data-toggle="buttons">
             <label class="btn btn-primary">
-              <input class="toggle" type="radio"
+              <input type="radio"
                  name="chimeRadio" <%= is_active ? 'checked' : '' %> />
               <% if (is_active) { %>
-                  <span class="glyphicon glyphicon-ok chimeRad" id="chimeRadio-<%- id %>"></span>
+                  <span class="glyphicon glyphicon-ok chimeRad toggle" id="chimeRadio-<%- id %>"></span>
               <% } else { %>
-                  <span class="glyphicon glyphicon-unchecked chimeRad" id="chimeRadio-<%- id %>"></span>
+                  <span class="glyphicon glyphicon-unchecked chimeRad toggle" id="chimeRadio-<%- id %>"></span>
               <% } %>
             </label>
             <label class="btn btn-primary">
-              <span class="glyphicon glyphicon-play" id="playButton-<%- id %>"></span>
+              <span class="glyphicon glyphicon-play playbutton" id="playButton-<%- id %>"></span>
             </label>
           </div> <!-- col-md-4 -->
         </div> <!-- btn-group -->
@@ -84,5 +100,12 @@
       </div> <!-- form-group -->
     </script>
 
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="vendor.js/jquery.min.js"></script>
+    <script src="vendor.js/underscore.js"></script>
+    <script src="vendor.js/backbone.js"></script>
+    <script src="vendor.js/bootstrap.min.js"></script>
+    <script src="js/zenchimes.js"></script>
   </body>
 </html>
