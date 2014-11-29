@@ -35,7 +35,6 @@ var Chime = Backbone.Model.extend({
     // Toggle the `is_active` state of the item. The REST API call will
     // set this one active and all others inactive.
     toggle: function() {
-        console.log('In model.Chime.toggle');
         this.save({
             is_active: !this.get('is_active'),
         });
@@ -100,7 +99,6 @@ var ChimeView = Backbone.View.extend({
 
     // Toggle chime selector for UI and model.
     toggleActive: function () {
-        console.log("toggleActive click event");
         chime_id = this.model.get('id');
 
         // Since the previous selected id is not available, we need to
