@@ -36,12 +36,13 @@
               <h3 class="panel-title">Available Chimes</h3>
             </div>
             <div class="panel-body">
-              <p>Select the chime that will play.</p>
-
-                <div id="chimeapp"></div>
-
+              <p>Chimes active:</p>
+              <div id="chime-enabled-view"></div>
             </div>
-
+            <div class="panel-body">
+              <p>Select the chime that will play.</p>
+              <div id="chimeapp"></div>
+            </div>
           </div> <!-- panel-primary -->
       </div> <!-- row -->
 
@@ -49,8 +50,6 @@
         <div class="panel panel-primary">
 
           <div class="panel-heading">
-            <!-- <h3 class="panel-title">System Configuration</h3> -->
-            <!--<h3 class="panel-title"><a href="#system" data-toggle="collapse">System Configuration</a></h3>-->
             <h3 class="panel-title">System Configuration
                 <button class="btn btn-primary" data-toggle="collapse"
                   data-target="#system">
@@ -72,10 +71,29 @@
 
     </div> <!-- container -->
 
-
-
     <!-- Templates -->
 
+    <!-- Enable/Disable Template -->
+    <script type="text/template" id="chime-enabled-template">
+      <div class="col-sm-2">
+      <div class="btn-group btn-toggle">
+          <% if (chime_enabled) { %>
+            <button id="btn-on" class="onoff btn btn-md btn-success active">
+          <% } else { %>
+            <button id="btn-on" class="onoff btn btn-md btn-default">
+          <% } %>
+          <span class="glyphicon glyphicon-ok"></span></button>
+          <% if (chime_enabled) { %>
+            <button id="btn-off" class="onoff btn btn-md btn-default">
+          <% } else { %>
+            <button id="btn-off" class="onoff btn btn-md btn-danger active">
+          <% } %>
+          <span class="glyphicon glyphicon-remove"></span></button>
+      </div>
+      </div>
+    </script>
+
+    <!-- Chime Item Template -->
     <script type="text/template" id="chime-template">
       <div class="form-group">
         <div class="col-sm-2">

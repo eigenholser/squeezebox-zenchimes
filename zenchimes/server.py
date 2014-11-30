@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 import atexit
-from bottle import route, run, template, static_file, get, post, put, request, Bottle
+from bottle import (route, run, template, static_file, get, post, put, request,
+        Bottle)
 import ConfigParser
 import json
 import logging
@@ -61,21 +62,39 @@ class StripPathMiddleware(object):
         return self.a(e, h)
 
 
-@app.route('/')
-def index():
-    """
-    Return Zen Chimes app.
-    """
-    return static_file('index.html', root=settings.PUBLIC_ROOT)
+@app.get('/config/<parameter>')
+def get_config_parameter(parameter):
+    """Single configuration parameter."""
+
+    conn = sqlite3.connect(settings.CHIME_DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    row = c.execute("SELECT * FROM config WHERE parameter = ?",
+            (parameter,)).fetchone()
+    row_dict = {}
+    row_dict['section'] = row['section']
+    row_dict['parameter'] = row['parameter']
+    row_dict['value'] = row['value']
+    row_dict['description'] = row['description']
+    return json.dumps(row_dict)
 
 
-@app.route('<filepath:path>')
-def serve_static(filepath):
-    """
-    Fetch arbitrary static files in PUBLIC_ROOT.
-    """
-    return static_file(filepath, root=settings.PUBLIC_ROOT)
+@app.put('/config/<parameter>')
+def put_config_parameter(parameter):
+    """Single configuration parameter."""
 
+    value = json.loads(request.forms.keys()[0])['value']
+    conn = sqlite3.connect(settings.CHIME_DATABASE)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute("UPDATE config SET value = ? WHERE parameter = ?",
+            (value, parameter,))
+    conn.commit()
+    # TODO: error handling.
+    return {'status': 'ok'}
+
+
+@app.put('/chimes/<id:int>')
 
 @app.put('/chimes/<id:int>')
 def chime_update(id):
@@ -114,7 +133,6 @@ def chimes_collection():
 
 
 @app.get('/config')
-@app.put('/config')
 def config_data():
     """
     Experimental API endpoint to get and set select config data using Python's
@@ -138,6 +156,22 @@ def config_data():
     # TODO: Not implemented yet. Need JavaScript code...
     if request.method == 'PUT':
         return {'status': 'ok'}
+
+
+@app.get('/<filepath:path>')
+def serve_static(filepath):
+    """
+    Fetch arbitrary static files in PUBLIC_ROOT.
+    """
+    return static_file(filepath, root=settings.PUBLIC_ROOT)
+
+
+@app.route('/')
+def index():
+    """
+    Return Zen Chimes app.
+    """
+    return static_file('index.html', root=settings.PUBLIC_ROOT)
 
 
 if __name__ == '__main__':

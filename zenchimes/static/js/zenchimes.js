@@ -6,15 +6,33 @@ var ZenChimes = {
         ZenChimes.playList = [];
         ZenChimes.play = {};
 
+        ZenChimes.chime_enabled = new ConfigItem({parameter: "chime_enabled"});
+        ZenChimes.chime_enabled.fetch();
+
         // views
-        ZenChimes.chimesList = new ChimesView({collection: ZenChimes.chimes});
+        ZenChimes.chimesList = new ChimesView({
+            collection: ZenChimes.chimes
+        });
+        ZenChimes.chimeEnabled = new ChimeEnabledView({
+            model: ZenChimes.chime_enabled,
+            el: "#chime-enabled-view"
+        });
 
         ZenChimes.chimesList.render();
     }
 }
 
+// Document on ready. Start app.
 $(function(){
     ZenChimes.init();
+});
+
+// Config Model
+// ------------
+// Configuration data
+var ConfigItem = Backbone.Model.extend({
+    urlRoot: "/config/",
+    idAttribute: "parameter"
 });
 
 // Chime Model
@@ -44,13 +62,15 @@ var Chime = Backbone.Model.extend({
 
 // Chimes Collection
 // -----------------
-
+//
 var ChimesList = Backbone.Collection.extend({
-    // Reference to this collection's model.
     model: Chime,
     url: '/chimes',
 });
 
+// Chimes List View
+// ----------------
+//
 var ChimesView = Backbone.View.extend({
     initialize: function() {
         _.bindAll(this, "render", "addOne", "addAll");
@@ -61,7 +81,6 @@ var ChimesView = Backbone.View.extend({
     className: "list-unstyled",
 
     render: function() {
-        //this.$el.html(this.template);
         this.addAll();
         this.$el.html(ZenChimes.chimeItems);
         $("#chimeapp").append(this.el);
@@ -80,8 +99,9 @@ var ChimesView = Backbone.View.extend({
     }
 });
 
-// ChimeView - Individual item view
+// Chime Individual item view
 // --------------------------------
+//
 var ChimeView = Backbone.View.extend({
     tagName: "li",
 
@@ -163,3 +183,59 @@ var ChimeView = Backbone.View.extend({
     },
 });
 
+var ChimeEnabledView = Backbone.View.extend({
+    initialize: function () {
+        _.bindAll(this, "render", "buttonOff", "buttonOn");
+        this.model.bind("change", this.render, this);
+    },
+
+    events: {
+        "click #btn-off": "buttonOff",
+        "click #btn-on": "buttonOn"
+    },
+
+    render: function () {
+        template = $("#chime-enabled-template").html();
+
+        // It is not boolean so use == "True" to make it that way.
+        //console.log("chime_enabled: " + ZenChimes.chime_enabled.toJSON().value);
+        compiled = _.template(template)({
+            chime_enabled: ZenChimes.chime_enabled.toJSON().value == "True"
+        });
+        this.$el.html(compiled);
+        return this;
+    },
+
+    // Manage enable/disable toggle switch for chimes.
+    buttonOff: function () {
+        btnOn = $("#btn-on")[0];
+        btnOff = $("#btn-off")[0];
+        $(".onoff").toggleClass("active");
+        if (btnOn.classList.contains("btn-success")) {
+            btnOn.classList.remove("btn-success");
+            btnOn.classList.add("btn-default");
+        }
+        if (btnOff.classList.contains("btn-default")) {
+            btnOff.classList.remove("btn-default");
+            btnOff.classList.add("btn-danger");
+        }
+        this.model.set({value: "False"});
+        this.model.save();
+    },
+
+    buttonOn: function () {
+        btnOn = $("#btn-on")[0];
+        btnOff = $("#btn-off")[0];
+        $(".onoff").toggleClass("active");
+        if (btnOn.classList.contains("btn-default")) {
+            btnOn.classList.remove("btn-default");
+            btnOn.classList.add("btn-success");
+        }
+        if (btnOff.classList.contains("btn-danger")) {
+            btnOff.classList.remove("btn-danger");
+            btnOff.classList.add("btn-default");
+        }
+        this.model.set({value: "True"});
+        this.model.save();
+    }
+});
