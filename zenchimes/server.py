@@ -19,33 +19,14 @@ from zenchimes.scheduler import ChimeScheduler
 from zenchimes import settings
 
 
-#config = ConfigParser.ConfigParser()
-#config.read("{0}".format(settings.CONFIG_FILE))
+logging.config.dictConfig(settings.LOGGING_CONFIG)
 
-# TODO: Temporary
-config = ConfigParser.ConfigParser()
-config_file = "{0}/extras/zenchimes.cfg".format(os.path.abspath(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')))
-config.read(config_file)
-
-# There is no logging yet so let's just make it work.
-try:
-    loglevel = config.get('zenchimes', 'loglevel')
-except:
-    loglevel = "INFO"
-
-logging.basicConfig(filename=settings.LOG_FILE,
-        level=eval("logging.{0}".format(loglevel)),
-        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
-logger = logging.getLogger()
-
-## Fetch some configuration settings
-HTTP_LISTEN_IP_ADDR = config.get('server', 'http_listen_ip_addr')
-HTTP_LISTEN_PORT = config.get('server', 'http_listen_port')
+SERVER_HTTP_LISTEN_IP_ADDR = "0.0.0.0"
+SERVER_HTTP_LISTEN_PORT = settings.SERVER_HTTP_LISTEN_PORT
 
 context = zmq.Context()
 socket = context.socket(zmq.PAIR)
-url = "tcp://localhost:5000"
+url = "tcp://localhost:{}".format(settings.ZMQ_CONTROL_PORT)
 socket.connect(url)
 
 app = application = Bottle()
@@ -176,4 +157,4 @@ def index():
 
 if __name__ == '__main__':
     run(app=StripPathMiddleware(app),
-        host=HTTP_LISTEN_IP_ADDR, port=HTTP_LISTEN_PORT)
+        host=SERVER_HTTP_LISTEN_IP_ADDR, port=SERVER_HTTP_LISTEN_PORT)

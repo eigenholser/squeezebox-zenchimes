@@ -22,8 +22,6 @@ from zenchimes.utilities import logged_class, sockethandler, LogServer
 from zenchimes import settings
 
 
-
-
 @logged_class
 class ChimeScheduler(object):
     """Initialize chime events based on configuration. Spawn a chime player
@@ -175,23 +173,9 @@ class ChimeScheduler(object):
                 self.current_event += 1
 
 
-
 if __name__ == '__main__':
-    # TODO: Temporary
-    config = ConfigParser.ConfigParser()
-    config_file = "{0}/extras/zenchimes.cfg".format(os.path.abspath(
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')))
-    config.read(config_file)
-
-    # There is no logging yet so let's just make it work.
-    try:
-        loglevel = config.get('zenchimes', 'loglevel')
-    except:
-        loglevel = "INFO"
-
     logging.config.dictConfig(settings.LOGGING_CONFIG)
 
     scheduler = ChimeScheduler(config=config)
     scheduler.start()
 
-# TODO: Configure logging such that it logs to console or file.
