@@ -8,14 +8,13 @@ from zenchimes.utilities import sockethandler
 PROJECT_ROOT = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
 APP_ROOT = os.path.normpath(os.path.join(os.environ['PYTHON_HOME'], '..'))
 
-CONFIG_FILE = '{0}/zenchimes.cfg'.format(APP_ROOT)
 LOG_FILE = '{0}/zenchimes.log'.format(APP_ROOT)
 PUBLIC_ROOT = '{0}/static'.format(PROJECT_ROOT)
 CHIME_DATABASE = '{0}/../extras/chimes.db'.format(PROJECT_ROOT)
-SERVER_HTTP_LISTEN_PORT = os.getenv('SERVER_HTTP_LISTEN_PORT', 3031)
-TCP_LOGGING_PORT = os.getenv('TCP_LOGGING_PORT', 8020)
-ZMQ_CONTROL_PORT = os.getenv('ZMQ_CONTROL_PORT', 5000)
-LOG_LEVEL = os.getenv('LOG_LEVEL', "DEBUG")
+SERVER_HTTP_LISTEN_PORT = os.environ['SERVER_HTTP_LISTEN_PORT']
+TCP_LOGGING_PORT = os.environ['TCP_LOGGING_PORT']
+ZMQ_CONTROL_PORT = os.environ['ZMQ_CONTROL_PORT']
+LOGGING_LEVEL = os.environ['LOGGING_LEVEL']
 
 LOGGING_CONFIG = {
     'version': 1,
@@ -34,7 +33,7 @@ LOGGING_CONFIG = {
         'file': {
             'class': 'logging.FileHandler',
             'formatter': 'default',
-            'filename': 'zenchimes.log',
+            'filename': LOG_FILE,
             'mode': 'a',
             'encoding': 'utf-8',
         },
@@ -53,12 +52,12 @@ LOGGING_CONFIG = {
     'loggers': {
         'zenchimes': {
             'handlers': ['socket'],
-            'level': LOG_LEVEL,
+            'level': LOGGING_LEVEL,
             'propagate': False,
         },
         '__main__': {
             'handlers': ['socket'],
-            'level': LOG_LEVEL,
+            'level': LOGGING_LEVEL,
             'propagate': False,
         },
     },

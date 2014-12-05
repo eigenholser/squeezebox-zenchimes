@@ -22,30 +22,41 @@ if [ -z $SUDO_USER ]; then
     SUDO_USER=root
 fi
 
-# Want to install on recent Ubuntu and Raspian. Raspian OOB uses sysv init.
+# Set override config settings via environment variables. Non-default settings
+# changes should be made in `env.sh'.
+sh env.sh
+
+# Set sane default values.
+[ ! -z $SERVER_HTTP_LISTEN_PORT ] && SERVER_HTTP_LISTEN_PORT=3031
+[ ! -z $TCP_LOGGING_PORT ] && TCP_LOGGING_PORT=8020
+[ ! -z $ZMQ_CONTROL_PORT ] && ZMQ_CONTROL_PORT=5000
+[ ! -z $LOGGING_LEVEL ] && LOGGING_LEVEL="DEBUG"
+
+# Want to install on recent Ubuntu only.
 if [ -e /usr/bin/lsb_release ]; then
     # Ubuntu
-    STARTUP_SOURCE=extras/zenchimes_upstart.m4
-    STARTUP_FILE=/etc/init/zenchimes.conf
-    STARTUP_CMD="/sbin/start zenchimes"
+    SERVER_STARTUP_SOURCE=extras/zenchimes_upstart.m4
+    SERVER_STARTUP_FILE=/etc/init/zenchimes_server.conf
+    SERVER_STARTUP_CMD="/sbin/start zenchimes_server"
     # Stop zenchimes if it is running.
-    if [ -f $UPSTART_CONF ]; then
-        /sbin/status zenchimes | grep --silent running
+    if [ -f $SERVER_STARTUP_FILE ]; then
+        /sbin/status zenchimes_server | grep --silent running
         if [ $? == 0 ]; then
-            stop zenchimes
+            stop zenchimes_server
             sleep 1
         fi
     fi
-else
-    # Raspian?
-    STARTUP_SOURCE=extras/zenchimes_sysvinit.m4
-    STARTUP_FILE=/etc/init.d/zenchimes
-    STARTUP_CMD="/usr/sbin/service zenchimes start"
-    /usr/sbin/service zenchimes status > /dev/null
+
+    SCHEDULER_STARTUP_SOURCE=extras/zenchimes_scheduler_upstart.m4
+    SCHEDULER_STARTUP_FILE=/etc/init/zenchimes_scheduler.conf
+    SCHEDULER_STARTUP_CMD="/sbin/start zenchimes_scheduler"
     # Stop zenchimes if it is running.
-    if [ $? == 0 ]; then
-        /usr/sbin/service zenchimes stop > /dev/null
-        sleep 1
+    if [ -f $SCHEDULER_STARTUP_FILE ]; then
+        /sbin/status zenchimes_scheduler | grep --silent running
+        if [ $? == 0 ]; then
+            stop zenchimes_scheduler
+            sleep 1
+        fi
     fi
 fi
 
@@ -61,16 +72,10 @@ export PYTHON_HOME="${install_dir}/env"
 # Create install directory
 /usr/bin/install --group root --owner $SUDO_USER --directory $install_dir
 
-# Install zenchimes program files
-if [ ! -e "${install_dir}/zenchimes.cfg" ]; then
-    # Service runs as user `nobody'. Configuration file must be writable.
-    /usr/bin/install --group nogroup --owner nobody --target-directory \
-        $install_dir extras/zenchimes.cfg
-fi
-
 # Install chimes sqlite3 database
 [ -e $install_dir/chimes.db ] && rm $install_dir/chimes.db
 /usr/bin/sqlite3 $install_dir/chimes.db < extras/chimes.sql
+/usr/bin/sqlite3 $install_dir/chimes.db < extras/config.sql
 # Service runs as user `nobody'. Database must be writable.
 chown nobody:nogroup $install_dir/chimes.db
 
@@ -90,16 +95,33 @@ su $SUDO_USER -c "source $install_dir/env/bin/activate; pip install dist/zenchim
 
 export PROJECT_ROOT=`su $SUDO_USER -c "cd $install_dir; source env/bin/activate; python -c 'from zenchimes import settings; print settings.PROJECT_ROOT;'"`
 
-# Install upstart file.
+# Install upstart files.
+# Web server
 /usr/bin/m4 \
     --define=__INSTALL_DIR__=$install_dir \
     --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
-    $STARTUP_SOURCE > $STARTUP_FILE
-chown root:root /etc/init.d/zenchimes
+    --define=__SERVER_HTTP_LISTEN_PORT__=$SERVER_HTTP_LISTEN_PORT \
+    --define=__TCP_LOGGING_PORT__=$TCP_LOGGING_PORT \
+    --define=__ZMQ_CONTROL_PORT__=$ZMQ_CONTROL_PORT \
+    --define=__LOGGING_LEVEL__="${LOGGING_LEVEL}" \
+    $SERVER_STARTUP_SOURCE > $SERVER_STARTUP_FILE
+
+# Scheduler daemon
+/usr/bin/m4 \
+    --define=__INSTALL_DIR__=$install_dir \
+    --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
+    --define=__TCP_LOGGING_PORT__=$TCP_LOGGING_PORT \
+    --define=__ZMQ_CONTROL_PORT__=$ZMQ_CONTROL_PORT \
+    --define=__LOGGING_LEVEL__="${LOGGING_LEVEL}" \
+    $SCHEDULER_STARTUP_SOURCE > $SCHEDULER_STARTUP_FILE
+
+chown root:root $SERVER_STARTUP_FILE
+chown root:root $SCHEDULER_STARTUP_FILE
 
 # Had to do this trick because I didn't want to run pip as root.
 chown nobody:nogroup $install_dir
 chown -R nobody:nogroup $install_dir/env
 
-# Start the service
-$STARTUP_CMD
+# Start the services
+$SERVER_STARTUP_CMD
+$SCHEDULER_STARTUP_CMD
