@@ -215,6 +215,16 @@ class LMSCommandLineInterface(object):
         """
         Play the chime.
         """
+
+        # Fetch the current value of chime_enabled.
+        req = requests.get('http://localhost:3031/config/chime_enabled')
+        config = json.loads(req.text)
+
+        # Implicit conversion to boolean. Continue with chime only if currently
+        # enabled.
+        if config.get("value", "True") == "True":
+            return
+
         playerid = self.players_initial_state['sync_master']
         sync_master_mode = 'play'
         for playerindex in range(self.players_initial_state['count']):
