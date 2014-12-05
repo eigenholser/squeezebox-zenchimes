@@ -73,11 +73,11 @@ export PYTHON_HOME="${install_dir}/env"
 /usr/bin/install --group root --owner $SUDO_USER --directory $install_dir
 
 # Install chimes sqlite3 database
-[ -e $install_dir/chimes.db ] && rm $install_dir/chimes.db
-/usr/bin/sqlite3 $install_dir/chimes.db < extras/chimes.sql
-/usr/bin/sqlite3 $install_dir/chimes.db < extras/config.sql
+[ -e $install_dir/zenchimes.db ] && rm $install_dir/zenchimes.db
+/usr/bin/sqlite3 $install_dir/zenchimes.db < extras/chimes.sql
+/usr/bin/sqlite3 $install_dir/zenchimes.db < extras/config.sql
 # Service runs as user `nobody'. Database must be writable.
-chown nobody:nogroup $install_dir/chimes.db
+chown nobody:nogroup $install_dir/zenchimes.db
 
 # Setup Python virtual environment and install requirements
 if [ -e ${install_dir}/env ]; then

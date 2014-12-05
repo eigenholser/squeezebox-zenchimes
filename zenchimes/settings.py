@@ -8,9 +8,9 @@ from zenchimes.utilities import sockethandler
 PROJECT_ROOT = os.path.normpath(os.path.dirname(os.path.abspath(__file__)))
 APP_ROOT = os.path.normpath(os.path.join(os.environ['PYTHON_HOME'], '..'))
 
-LOG_FILE = '{0}/zenchimes.log'.format(APP_ROOT)
 PUBLIC_ROOT = '{0}/static'.format(PROJECT_ROOT)
-CHIME_DATABASE = '{0}/../extras/chimes.db'.format(PROJECT_ROOT)
+LOG_FILE = '{0}/zenchimes.log'.format(APP_ROOT)
+CHIME_DATABASE = '{0}/zenchimes.db'.format(APP_ROOT)
 SERVER_HTTP_LISTEN_PORT = os.environ['SERVER_HTTP_LISTEN_PORT']
 TCP_LOGGING_PORT = os.environ['TCP_LOGGING_PORT']
 ZMQ_CONTROL_PORT = os.environ['ZMQ_CONTROL_PORT']
