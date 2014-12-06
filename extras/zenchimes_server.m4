@@ -16,4 +16,4 @@ env ZMQ_CONTROL_PORT=__ZMQ_CONTROL_PORT__
 env LOGGING_LEVEL=__LOGGING_LEVEL__
 env PYTHON_HOME=__INSTALL_DIR__/env
 
-exec $PYTHON_HOME/bin/python __PROJECT_ROOT__/server.py
+exec $PYTHON_HOME/bin/uwsgi --http 0.0.0.0:__SERVER_HTTP_LISTEN_PORT__ --wsgi-file __PROJECT_ROOT__/server.py  --callable app --processes 1
