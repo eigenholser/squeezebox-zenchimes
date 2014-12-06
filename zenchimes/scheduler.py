@@ -45,12 +45,19 @@ class ChimeScheduler(object):
         """Read configuration from web server API. Initialize."""
         self.logger.info("Reading configuration.")
         config = self.config
-        req = requests.get('http://localhost:3031/config')
+        req = requests.get(
+                'http://localhost:{}/config'.format(
+                    settings.SERVER_HTTP_LISTEN_PORT))
         config = json.loads(req.text)
         self.TIMEZONE = config['scheduler']['timezone']
         self.STARTTIME = config['scheduler']['starttime']
         self.ENDTIME = config['scheduler']['endtime']
         self.CHIME_INTERVAL = int(config['scheduler']['chime_interval'])
+        self.EVENT_POLL_INTERVAL = int(
+                config['scheduler']['event_poll_interval'])
+        self.LOGGING_LEVEL = config['zenchimes']['logging_level']
+
+        self.logger.setLevel(self.LOGGING_LEVEL)
 
         os.environ['TZ'] = self.TIMEZONE
         s = datetime.strptime(self.STARTTIME, self.fmt)
@@ -73,7 +80,8 @@ class ChimeScheduler(object):
     def current_time(self):
         """Returns current time."""
         t = datetime.now()
-        self.logger.debug("current_time: {0}".format(time(t.hour, t.minute, t.second)))
+        self.logger.debug(
+                "current_time: {0}".format(time(t.hour, t.minute, t.second)))
         return time(t.hour, t.minute, t.second)
 
     def is_event(self):
@@ -133,16 +141,19 @@ class ChimeScheduler(object):
         messages."""
         ctx = zmq.Context()
         socket = ctx.socket(zmq.PAIR)
-        socket.bind("tcp://*:5000")
+        socket.bind("tcp://*:{}".format(settings.ZMQ_CONTROL_PORT))
 
-        loop = self.loop
         logserver = LogServer()
         logserver.listen(settings.TCP_LOGGING_PORT)
+
+        loop = self.loop
 
         stream = ZMQStream(socket, loop)
         stream.on_recv(self.handle_ctrl_msg)
 
-        pc = PeriodicCallback(self.chime, 15000, loop)
+        # TODO: Stop loop and restart on CONFIG reread just to get possible new
+        # EVENT_POLL_INTERVAL setting?
+        pc = PeriodicCallback(self.chime, self.EVENT_POLL_INTERVAL, loop)
         pc.start()
 
         loop.start()
