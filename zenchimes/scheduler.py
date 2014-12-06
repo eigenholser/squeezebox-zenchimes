@@ -1,4 +1,3 @@
-import ConfigParser
 import json
 import logging
 import logging.config
@@ -176,6 +175,6 @@ class ChimeScheduler(object):
 if __name__ == '__main__':
     logging.config.dictConfig(settings.LOGGING_CONFIG)
 
-    scheduler = ChimeScheduler(config=config)
+    scheduler = ChimeScheduler()
     scheduler.start()
 
