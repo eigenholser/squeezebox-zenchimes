@@ -45,7 +45,7 @@ LOGGING_CONFIG = {
         },
     },
     'root': {
-        'level': 'WARNING',
+        'level': LOGGING_LEVEL,
         'handlers': ['console', 'file'],
         'propagate': False,
     },
