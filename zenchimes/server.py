@@ -3,9 +3,9 @@
 import atexit
 from bottle import (route, run, template, static_file, get, post, put, request,
         Bottle)
-import ConfigParser
 import json
 import logging
+import logging.config
 import multiprocessing
 import os
 import signal
@@ -20,6 +20,7 @@ from zenchimes import settings
 
 
 logging.config.dictConfig(settings.LOGGING_CONFIG)
+logger = logging.getLogger(__name__)
 
 SERVER_HTTP_LISTEN_IP_ADDR = "0.0.0.0"
 SERVER_HTTP_LISTEN_PORT = settings.SERVER_HTTP_LISTEN_PORT
@@ -144,6 +145,7 @@ def serve_static(filepath):
     """
     Fetch arbitrary static files in PUBLIC_ROOT.
     """
+    logger.debug("Request {}".format(filepath))
     return static_file(filepath, root=settings.PUBLIC_ROOT)
 
 
@@ -152,6 +154,7 @@ def index():
     """
     Return Zen Chimes app.
     """
+    logger.debug("Request index.html")
     return static_file('index.html', root=settings.PUBLIC_ROOT)
 
 
