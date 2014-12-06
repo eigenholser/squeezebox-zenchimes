@@ -73,6 +73,7 @@ def put_config_parameter(parameter):
             (value, parameter,))
     conn.commit()
     # TODO: error handling.
+    socket.send("CONFIG")
     return {'status': 'ok'}
 
 
