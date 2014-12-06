@@ -11,9 +11,9 @@ APP_ROOT = os.path.normpath(os.path.join(os.environ['PYTHON_HOME'], '..'))
 PUBLIC_ROOT = '{0}/static'.format(PROJECT_ROOT)
 LOG_FILE = '{0}/zenchimes.log'.format(APP_ROOT)
 CHIME_DATABASE = '{0}/zenchimes.db'.format(APP_ROOT)
-SERVER_HTTP_LISTEN_PORT = os.environ['SERVER_HTTP_LISTEN_PORT']
-TCP_LOGGING_PORT = os.environ['TCP_LOGGING_PORT']
-ZMQ_CONTROL_PORT = os.environ['ZMQ_CONTROL_PORT']
+SERVER_HTTP_LISTEN_PORT = int(os.environ['SERVER_HTTP_LISTEN_PORT'])
+TCP_LOGGING_PORT = int(os.environ['TCP_LOGGING_PORT'])
+ZMQ_CONTROL_PORT = int(os.environ['ZMQ_CONTROL_PORT'])
 LOGGING_LEVEL = os.environ['LOGGING_LEVEL']
 
 LOGGING_CONFIG = {
