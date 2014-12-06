@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import ConfigParser
 import errno
 import json
 import os
