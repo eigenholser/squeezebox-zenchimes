@@ -24,10 +24,10 @@ fi
 
 # Set override config settings via environment variables. Non-default settings
 # changes should be made in `env.sh'.
-sh env.sh
+source env.sh
 
 # Set sane default values.
-[ ! -z $SERVER_HTTP_LISTEN_PORT ] && SERVER_HTTP_LISTEN_PORT=3031
+[ ! -z $SERVER_HTTP_LISTEN_PORT ] && SERVER_HTTP_LISTEN_PORT="3031"
 [ ! -z $TCP_LOGGING_PORT ] && TCP_LOGGING_PORT=8020
 [ ! -z $ZMQ_CONTROL_PORT ] && ZMQ_CONTROL_PORT=5000
 [ ! -z $LOGGING_LEVEL ] && LOGGING_LEVEL="DEBUG"
@@ -35,26 +35,26 @@ sh env.sh
 # Want to install on recent Ubuntu only.
 if [ -e /usr/bin/lsb_release ]; then
     # Ubuntu
-    SERVER_STARTUP_SOURCE=extras/zenchimes_upstart.m4
-    SERVER_STARTUP_FILE=/etc/init/zenchimes_server.conf
-    SERVER_STARTUP_CMD="/sbin/start zenchimes_server"
+    SERVER_STARTUP_SOURCE=extras/zenchimes_server.m4
+    SERVER_STARTUP_FILE=/etc/init/zenchimes-server.conf
+    SERVER_STARTUP_CMD="/sbin/start zenchimes-server"
     # Stop zenchimes if it is running.
     if [ -f $SERVER_STARTUP_FILE ]; then
-        /sbin/status zenchimes_server | grep --silent running
+        /sbin/status zenchimes-server | grep --silent running
         if [ $? == 0 ]; then
-            stop zenchimes_server
+            stop zenchimes-server
             sleep 1
         fi
     fi
 
-    SCHEDULER_STARTUP_SOURCE=extras/zenchimes_scheduler_upstart.m4
-    SCHEDULER_STARTUP_FILE=/etc/init/zenchimes_scheduler.conf
-    SCHEDULER_STARTUP_CMD="/sbin/start zenchimes_scheduler"
+    SCHEDULER_STARTUP_SOURCE=extras/zenchimes_scheduler.m4
+    SCHEDULER_STARTUP_FILE=/etc/init/zenchimes-scheduler.conf
+    SCHEDULER_STARTUP_CMD="/sbin/start zenchimes-scheduler"
     # Stop zenchimes if it is running.
     if [ -f $SCHEDULER_STARTUP_FILE ]; then
-        /sbin/status zenchimes_scheduler | grep --silent running
+        /sbin/status zenchimes-scheduler | grep --silent running
         if [ $? == 0 ]; then
-            stop zenchimes_scheduler
+            stop zenchimes-scheduler
             sleep 1
         fi
     fi
@@ -99,20 +99,21 @@ export PROJECT_ROOT=`su $SUDO_USER -c "cd $install_dir; source env/bin/activate;
 # Web server
 /usr/bin/m4 \
     --define=__INSTALL_DIR__=$install_dir \
-    --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
+    --define=__PROJECT_ROOT__=$PROJECT_ROOT \
     --define=__SERVER_HTTP_LISTEN_PORT__=$SERVER_HTTP_LISTEN_PORT \
     --define=__TCP_LOGGING_PORT__=$TCP_LOGGING_PORT \
     --define=__ZMQ_CONTROL_PORT__=$ZMQ_CONTROL_PORT \
-    --define=__LOGGING_LEVEL__="${LOGGING_LEVEL}" \
+    --define=__LOGGING_LEVEL__=$LOGGING_LEVEL \
     $SERVER_STARTUP_SOURCE > $SERVER_STARTUP_FILE
 
 # Scheduler daemon
 /usr/bin/m4 \
     --define=__INSTALL_DIR__=$install_dir \
-    --define=__PROJECT_ROOT__="${PROJECT_ROOT}" \
+    --define=__PROJECT_ROOT__=$PROJECT_ROOT \
+    --define=__SERVER_HTTP_LISTEN_PORT__=$SERVER_HTTP_LISTEN_PORT \
     --define=__TCP_LOGGING_PORT__=$TCP_LOGGING_PORT \
     --define=__ZMQ_CONTROL_PORT__=$ZMQ_CONTROL_PORT \
-    --define=__LOGGING_LEVEL__="${LOGGING_LEVEL}" \
+    --define=__LOGGING_LEVEL__=$LOGGING_LEVEL \
     $SCHEDULER_STARTUP_SOURCE > $SCHEDULER_STARTUP_FILE
 
 chown root:root $SERVER_STARTUP_FILE
