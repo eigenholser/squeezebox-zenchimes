@@ -153,7 +153,7 @@ class ChimeScheduler(object):
 
         # TODO: Stop loop and restart on CONFIG reread just to get possible new
         # EVENT_POLL_INTERVAL setting?
-        pc = PeriodicCallback(self.chime, self.EVENT_POLL_INTERVAL, loop)
+        pc = PeriodicCallback(self.chime, self.EVENT_POLL_INTERVAL * 1E3, loop)
         pc.start()
 
         loop.start()
