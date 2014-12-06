@@ -5,6 +5,7 @@ import struct
 
 from tornado.tcpserver import TCPServer
 
+
 def logged_class(cls):
     """Class Decorator to add a class level logger to the class with module and
     name."""
