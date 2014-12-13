@@ -26,7 +26,8 @@ class LMSCommandLineInterface(object):
         self.logger.debug("Initializing")
         self.error = False
 
-        req = requests.get('http://localhost:3031/config')
+        req = requests.get('http://localhost:{}/config'.format(
+                    settings.SERVER_HTTP_LISTEN_PORT))
         config = json.loads(req.text)
         player = config.get('player', None) # TODO: handle this case
         self.LMS_CHIME_PATH = player.get('lms_chime_path', None)
@@ -40,7 +41,8 @@ class LMSCommandLineInterface(object):
         self.logger.debug("MIXER_VOLUME: {0}".format(self.MIXER_VOLUME))
 
         # Quick and dirty error catch-all.
-        req = requests.get("http://localhost:3031/chimes")
+        req = requests.get('http://localhost:{}/chimes'.format(
+                    settings.SERVER_HTTP_LISTEN_PORT))
         chimes = json.loads(req.text)
 
         for chime in chimes:
@@ -216,7 +218,8 @@ class LMSCommandLineInterface(object):
         """
 
         # Fetch the current value of chime_enabled.
-        req = requests.get('http://localhost:3031/config/chime_enabled')
+        req = requests.get('http://localhost:{}/config/chime_enabled'.format(
+                    settings.SERVER_HTTP_LISTEN_PORT))
         config = json.loads(req.text)
 
         # Implicit conversion to boolean. Continue with chime only if currently
